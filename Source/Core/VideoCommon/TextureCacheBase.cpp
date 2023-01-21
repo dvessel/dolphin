@@ -1138,7 +1138,7 @@ public:
     levels.push_back({{width, height, row_length}, buffer});
   }
 
-  bool HasArbitraryMipmaps(u8* downsample_buffer) const
+  bool HasArbitraryMipmaps(std::string_view name, u8* downsample_buffer) const
   {
     if (levels.size() < 2)
       return false;
@@ -1176,6 +1176,7 @@ public:
       // Find the average difference between pixels in this level but downsampled
       // and the next level
       auto diff = mip.AverageDiff(dst);
+      INFO_LOG_FMT(VIDEO, "{} level {}: {}", name, i, diff);
       total_diff += diff;
 
       std::swap(src, dst);
@@ -1710,7 +1711,7 @@ RcTcacheEntry TextureCacheBase::GetTexture(const int textureCacheSafetyColorSamp
   entry->SetNotCopy();
 
   std::string basename;
-  if (g_ActiveConfig.bDumpTextures && !hires_tex)
+  if (g_ActiveConfig.bDumpTextures && !hires_tex || true)
   {
     basename = HiresTexture::GenBaseName(texture_info, true);
   }
@@ -1757,8 +1758,9 @@ RcTcacheEntry TextureCacheBase::GetTexture(const int textureCacheSafetyColorSamp
     }
   }
 
-  entry->has_arbitrary_mips = hires_tex ? hires_tex->HasArbitraryMipmaps() :
-                                          arbitrary_mip_detector.HasArbitraryMipmaps(dst_buffer);
+  entry->has_arbitrary_mips = hires_tex ?
+                                  hires_tex->HasArbitraryMipmaps() :
+                                  arbitrary_mip_detector.HasArbitraryMipmaps(basename, dst_buffer);
 
   if (g_ActiveConfig.bDumpTextures && !hires_tex)
   {
